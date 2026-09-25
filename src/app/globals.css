@@ -1,0 +1,150 @@
+/* School Enterprise Challenge — design system
+   Luxurious, editorial, mobile-first. Deep forest + gold + ivory paper. */
+
+@import url("https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..700&family=Inter:wght@400;500;600;700;800&display=swap");
+@import "tailwindcss";
+
+@theme {
+  /* type */
+  --font-display: "Fraunces", "Georgia", serif;
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  /* palette — names become utilities like bg-paper, text-ink, border-hairline */
+  --color-paper: #f5efe3;
+  --color-cream: #fbf7ee;
+  --color-cream-2: #f1e9d8;
+  --color-ink: #0e2b21;
+  --color-ink-2: #33463d;
+  --color-pine-950: #082018;
+  --color-pine-900: #0d3327;
+  --color-pine-850: #11392c;
+  --color-pine-800: #16503c;
+  --color-pine-700: #1e6b4f;
+  --color-pine-600: #2b8463;
+  --color-pine-200: #c7dccf;
+  --color-pine-100: #ddebe2;
+  --color-pine-50: #ecf4ef;
+  --color-gold-200: #f3e3b6;
+  --color-gold-300: #ead191;
+  --color-gold-400: #dfc078;
+  --color-gold-500: #c9a44e;
+  --color-gold-600: #a9832f;
+  --color-gold-700: #856523;
+  --color-clay-400: #d08c5f;
+  --color-clay-500: #c4703f;
+  --color-clay-600: #a5562c;
+  --color-plum-500: #7c4f66;
+  --color-sky-500: #4f7c96;
+  --color-hairline: rgba(14, 43, 33, 0.12);
+  --color-hairline-light: rgba(245, 239, 227, 0.16);
+
+  /* motion */
+  --animate-marquee: marquee 38s linear infinite;
+  --animate-float: floaty 7s ease-in-out infinite;
+  --animate-float-slow: floaty 10s ease-in-out infinite;
+  --animate-pulse-dot: pulsedot 2.2s ease-in-out infinite;
+
+  @keyframes marquee {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+  @keyframes floaty {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-12px); }
+  }
+  @keyframes pulsedot {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.55; transform: scale(0.8); }
+  }
+}
+
+html {
+  -webkit-tap-highlight-color: transparent;
+  scroll-behavior: smooth;
+}
+
+body {
+  @apply bg-paper text-ink font-sans antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background: var(--color-gold-400);
+  color: var(--color-ink);
+}
+
+/* ---------- bespoke helpers ---------- */
+
+.font-display {
+  font-family: var(--font-display);
+  font-optical-sizing: auto;
+}
+
+.text-balance { text-wrap: balance; }
+.text-pretty { text-wrap: pretty; }
+
+/* subtle film grain over hero surfaces */
+.grain::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.5;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.32'/%3E%3C/svg%3E");
+}
+
+/* thin editorial rule */
+.rule-gold {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--color-gold-500), transparent);
+}
+
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+.thin-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
+.thin-scroll::-webkit-scrollbar-thumb {
+  background: rgba(14, 43, 33, 0.18);
+  border-radius: 999px;
+}
+
+/* luxe focus states */
+:focus-visible {
+  outline: 2px solid var(--color-gold-500);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* gold gradient text */
+.gold-text {
+  background: linear-gradient(100deg, #b98c2f 0%, #e9ce8a 40%, #c9a44e 65%, #f2e2b2 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* soft elevation used across cards */
+.shadow-luxe {
+  box-shadow:
+    0 1px 0 rgba(14, 43, 33, 0.05),
+    0 10px 30px -12px rgba(14, 43, 33, 0.18);
+}
+.shadow-luxe-lg {
+  box-shadow:
+    0 2px 0 rgba(14, 43, 33, 0.04),
+    0 30px 60px -20px rgba(8, 32, 24, 0.35);
+}
+
+/* reveal-on-scroll base (JS adds .is-in) */
+.rv {
+  opacity: 0;
+  transform: translateY(26px);
+  transition: opacity 0.9s cubic-bezier(0.22, 1, 0.36, 1), transform 0.9s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.rv.is-in { opacity: 1; transform: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .rv { opacity: 1; transform: none; transition: none; }
+  * { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; }
+}
