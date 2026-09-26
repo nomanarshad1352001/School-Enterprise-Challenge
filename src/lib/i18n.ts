@@ -591,6 +591,56 @@ const en: Dict = {
 
   // welcome-back moment (Section 8)
   "dash.backToDraft": "You have an unfinished draft — it was saved automatically, just pick up where you left off.",
+
+  // feature: certificates
+  "cert.title": "Certificate of Achievement",
+  "cert.presented": "Proudly presented to",
+  "cert.for": "for outstanding enterprise work completing",
+  "cert.score": "Scored",
+  "cert.holder": "Lakeview Global Programme Director",
+  "cert.download": "Download certificate",
+  "cert.issue": "Award certificate",
+  "cert.ready": "Certificate ready",
+  "cert.unlock": "Complete a milestone to unlock your certificate",
+  "cert.downloaded": "Certificate downloaded — opens and prints from any device",
+
+  // feature: programme calendar (all roles)
+  "cal.title": "Programme calendar",
+  "cal.hint": "All deadlines at a glance.",
+  "cal.daysLeft": "days left",
+  "cal.dueToday": "Due today",
+  "cal.passed": "Closed",
+  "cal.next": "Next",
+
+  // feature: resource favorites (all roles)
+  "fav.saved": "Saved",
+  "fav.save": "Save for later",
+  "fav.mine": "My saved",
+  "fav.added": "Saved to your shelf",
+  "fav.removed": "Removed from your shelf",
+
+  // feature: Ask SEC help assistant (all roles)
+  "help.title": "Ask SEC",
+  "help.sub": "Instant answers from the SEC handbook.",
+  "help.ph": "Ask about deadlines, scores, uploads…",
+  "help.auto": "Automatic answers — these come from the programme handbook, not from a person.",
+  "help.none": "We couldn't find a handbook answer for that — message SEC Support in Messages instead.",
+  "help.top": "Best matches",
+
+  // feature: fair comparisons + judge craft (roles)
+  "lb.global": "Global",
+  "lb.country": "My country",
+  "judge.craft": "Your judging craft",
+  "judge.scored": "Scores given",
+  "judge.avg": "Avg. score given",
+  "judge.speed": "Avg. turnaround",
+
+  // admin: people CRUD
+  "ppl.edit": "Edit account",
+  "ppl.delete": "Delete account",
+  "ppl.deleteBody": "This permanently removes the account and cannot be undone in the demo. Continue?",
+  "ppl.updated": "Account updated",
+  "ppl.deleted": "Account deleted",
 };
 
 const es: Dict = {
@@ -1149,6 +1199,55 @@ const es: Dict = {
   "ev.manual": "Manual",
 
   "dash.backToDraft": "Tienes un borrador sin terminar — se guardó automáticamente, retómalo donde lo dejaste.",
+
+  // función: certificados
+  "cert.title": "Certificado de Logro",
+  "cert.presented": "Presentado orgullosamente a",
+  "cert.for": "por un excelente trabajo empresarial al completar",
+  "cert.score": "Puntuación",
+  "cert.holder": "Director Global del Programa",
+  "cert.download": "Descargar certificado",
+  "cert.issue": "Emitir certificado",
+  "cert.ready": "Certificado listo",
+  "cert.unlock": "Completa un hito para desbloquear tu certificado",
+  "cert.downloaded": "Certificado descargado — se abre e imprime desde cualquier dispositivo",
+
+  // función: calendario del programa
+  "cal.title": "Calendario del programa",
+  "cal.hint": "Todas las fechas límite de un vistazo.",
+  "cal.daysLeft": "días restantes",
+  "cal.dueToday": "Vence hoy",
+  "cal.passed": "Cerrado",
+  "cal.next": "Siguiente",
+
+  // función: favoritos en recursos
+  "fav.saved": "Guardado",
+  "fav.save": "Guardar para después",
+  "fav.mine": "Mis guardados",
+  "fav.added": "Guardado en tu estantería",
+  "fav.removed": "Quitado de tu estantería",
+
+  // función: asistente de ayuda Ask SEC
+  "help.title": "Pregunta a SEC",
+  "help.sub": "Respuestas instantáneas del manual SEC.",
+  "help.ph": "Pregunta sobre fechas, notas, entregas…",
+  "help.auto": "Respuestas automáticas — proceden del manual del programa, no de una persona.",
+  "help.none": "No encontramos una respuesta en el manual — escribe a Soporte SEC en Mensajes.",
+  "help.top": "Mejores coincidencias",
+
+  // función: comparaciones justas + oficio del juez
+  "lb.global": "Global",
+  "lb.country": "Mi país",
+  "judge.craft": "Tu oficio de juez",
+  "judge.scored": "Notas otorgadas",
+  "judge.avg": "Nota media otorgada",
+  "judge.speed": "Tiempo medio",
+
+  "ppl.edit": "Editar cuenta",
+  "ppl.delete": "Eliminar cuenta",
+  "ppl.deleteBody": "Esto elimina la cuenta permanentemente y no se puede deshacer en la demo. ¿Continuar?",
+  "ppl.updated": "Cuenta actualizada",
+  "ppl.deleted": "Cuenta eliminada",
 };
 
 export const STRINGS: Record<Lang, Dict> = { en, es };

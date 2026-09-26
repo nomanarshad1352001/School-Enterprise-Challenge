@@ -108,6 +108,11 @@ function People() {
   const [newName, setNewName] = useState("");
   const [newEmail, setNewEmail] = useState("");
   const [newRole, setNewRole] = useState<Role>("reviewer");
+  // full CRUD on accounts: edit modal + delete confirmation (any role)
+  const [editing, setEditing] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState<string | null>(null);
+  const editUser = state.adminUsers.find((u) => u.id === editing);
+  const deleteUser = state.adminUsers.find((u) => u.id === deleting);
 
   const rows = useMemo(() => state.adminUsers.filter((u) => {
     if (role !== "all" && u.role !== role) return false;
@@ -192,10 +197,20 @@ function People() {
                   </span>
                 </td>
                 <td className="px-4 py-2.5 text-right">
-                  <Button variant={u.status === "active" ? "outline" : "gold"} size="sm"
-                    onClick={() => dispatch({ type: "TOGGLE_SUSPEND", userId: u.id })}>
-                    {u.status === "active" ? t("a.suspend") : t("a.activate")}
-                  </Button>
+                  <div className="flex justify-end gap-1">
+                    <Button variant="outline" size="sm" onClick={() => setEditing(u.id)} aria-label={t("ppl.edit")}>
+                      {t("c.edit")}
+                    </Button>
+                    <Button variant={u.status === "active" ? "outline" : "gold"} size="sm"
+                      onClick={() => dispatch({ type: "TOGGLE_SUSPEND", userId: u.id })}>
+                      {u.status === "active" ? t("a.suspend") : t("a.activate")}
+                    </Button>
+                    <button onClick={() => setDeleting(u.id)}
+                      className="flex h-8 w-8 items-center justify-center rounded-full text-clay-600 transition hover:bg-clay-500/10"
+                      aria-label={t("ppl.delete")}>
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}
@@ -203,6 +218,27 @@ function People() {
         </table>
       </div>
       {pageRows.length === 0 && <div className="p-6"><EmptyState title={t("c.emptyTitle")} /></div>}
+      {/* edit modal */}
+      <EditUserModal
+        key={editing ?? "none"}
+        user={editUser ? { id: editUser.id, name: editUser.name, email: editUser.email, role: editUser.role, country: editUser.country, status: editUser.status } : null}
+        onClose={() => setEditing(null)}
+      />
+      {/* delete confirmation */}
+      <Modal open={!!deleteUser} onClose={() => setDeleting(null)} title={t("ppl.delete")}>
+        <p className="text-sm font-semibold text-ink">{deleteUser?.name} <span className="font-normal text-ink-2/70">({deleteUser?.email})</span></p>
+        <p className="mt-2 text-sm leading-relaxed text-ink-2">{t("ppl.deleteBody")}</p>
+        <div className="mt-5 flex gap-2">
+          <Button variant="outline" className="flex-1" onClick={() => setDeleting(null)}>{t("c.cancel")}</Button>
+          <Button variant="danger" className="flex-1" onClick={() => {
+            if (deleting) dispatch({ type: "DELETE_STAFF", id: deleting });
+            setDeleting(null);
+            toast(t("ppl.deleted"), "info");
+          }}>
+            <Trash2 size={14} /> {t("ppl.delete")}
+          </Button>
+        </div>
+      </Modal>
       <div className="flex items-center justify-between border-t border-hairline px-4 py-3">
         <span className="text-xs font-semibold text-ink-2/70">{rows.length} · {safePage + 1}/{pageCount}</span>
         <div className="flex gap-1.5">
@@ -211,6 +247,50 @@ function People() {
         </div>
       </div>
     </Card>
+  );
+}
+
+/* ---- edit an account (admin CRUD) ---- */
+function EditUserModal({
+  user, onClose,
+}: { user: { id: string; name: string; email: string; role: Role; country: string; status: "active" | "suspended" } | null; onClose: () => void }) {
+  const { t, dispatch, toast } = useApp();
+  const [name, setName] = useState(user?.name ?? "");
+  const [email, setEmail] = useState(user?.email ?? "");
+  const [role, setRole] = useState<Role>(user?.role ?? "reviewer");
+  const [country, setCountry] = useState(user?.country ?? "United Kingdom");
+  const [status, setStatus] = useState<"active" | "suspended">(user?.status ?? "active");
+  if (!user) return null;
+  const save = () => {
+    dispatch({ type: "UPDATE_STAFF", id: user.id, patch: { name: name.trim() || user.name, email: email.trim() || user.email, role, country, status } });
+    toast(t("ppl.updated"), "success");
+    onClose();
+  };
+  return (
+    <Modal open onClose={onClose} title={t("ppl.edit")}>
+      <div className="space-y-4">
+        <Field label={t("s.name")}><Input value={name} onChange={(e) => setName(e.target.value)} /></Field>
+        <Field label={t("s.email")}><Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} /></Field>
+        <div className="grid grid-cols-2 gap-3">
+          <Field label={t("a.colRole")}>
+            <Select value={role} onChange={(e) => setRole(e.target.value as Role)}>
+              {(["student", "teacher", "reviewer", "partner", "admin"] as Role[]).map((r) => <option key={r} value={r}>{t("role." + r)}</option>)}
+            </Select>
+          </Field>
+          <Field label={t("c.status")}>
+            <Select value={status} onChange={(e) => setStatus(e.target.value as "active" | "suspended")}>
+              <option value="active">{t("c.active")}</option>
+              <option value="suspended">{t("c.suspended")}</option>
+            </Select>
+          </Field>
+        </div>
+        <Field label={t("c.country")}><Input value={country} onChange={(e) => setCountry(e.target.value)} /></Field>
+        <div className="flex gap-2 pt-1">
+          <Button variant="outline" className="flex-1" onClick={onClose}>{t("c.cancel")}</Button>
+          <Button variant="gold" className="flex-1" onClick={save}>{t("c.save")}</Button>
+        </div>
+      </div>
+    </Modal>
   );
 }
 

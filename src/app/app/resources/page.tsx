@@ -6,16 +6,17 @@
 
 import { useMemo, useState } from "react";
 import type { ElementType } from "react";
-import { BookOpen, CirclePlay, Coins, Download, Eye, FileText, Megaphone, Search } from "lucide-react";
+import { BookOpen, CirclePlay, Coins, Download, Eye, FileText, Megaphone, Search, Star } from "lucide-react";
 import { useApp } from "@/lib/store";
 import type { Resource } from "@/lib/types";
 import { Button, Card, cx, EmptyState, Modal } from "@/components/ui";
 import { downloadText } from "@/lib/utils";
 
-type Cat = "all" | Resource["cat"];
+type Cat = "all" | "saved" | Resource["cat"];
 
 const CAT_META: Record<Cat, { icon: ElementType | null; key: string }> = {
   all: { icon: null, key: "c.all" },
+  saved: { icon: Star, key: "fav.mine" },
   Guides: { icon: BookOpen, key: "r.catGuides" },
   Templates: { icon: FileText, key: "r.catTemplates" },
   Finance: { icon: Coins, key: "r.catFinance" },
@@ -24,16 +25,23 @@ const CAT_META: Record<Cat, { icon: ElementType | null; key: string }> = {
 };
 
 export default function ResourcesPage() {
-  const { state, t, toast } = useApp();
+  const { state, t, toast, dispatch } = useApp();
   const [cat, setCat] = useState<Cat>("all");
   const [q, setQ] = useState("");
   const [open, setOpen] = useState<Resource | null>(null);
 
   const list = useMemo(() => state.resources.filter((r) => {
-    if (cat !== "all" && r.cat !== cat) return false;
+    if (cat === "saved" && !state.favorites.includes(r.id)) return false;
+    if (cat !== "all" && cat !== "saved" && r.cat !== (cat as Resource["cat"])) return false;
     if (q && !`${r.title} ${r.desc}`.toLowerCase().includes(q.toLowerCase())) return false;
     return true;
-  }), [state.resources, cat, q]);
+  }), [state.resources, cat, q, state.favorites]);
+
+  const toggleFav = (r: Resource) => {
+    const adding = !state.favorites.includes(r.id);
+    dispatch({ type: "TOGGLE_FAVORITE", id: r.id });
+    toast(adding ? t("fav.added") : t("fav.removed"), adding ? "success" : "info", r.title);
+  };
 
   const download = (r: Resource) => {
     downloadText(`SEC-${r.title.replace(/[^a-z0-9]+/gi, "-")}.txt`, r.body);
@@ -73,9 +81,14 @@ export default function ResourcesPage() {
                 <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-pine-950 text-gold-300">
                   <Icon size={19} />
                 </span>
-                <div className="flex gap-1.5">
+                <div className="flex items-center gap-1.5">
                   <span className="rounded-full bg-pine-100 px-2 py-1 text-[10px] font-bold tracking-wider text-pine-700">{r.lang}</span>
                   <span className="rounded-full bg-ink/5 px-2 py-1 text-[10px] font-bold tracking-wider text-ink-2">{r.size}</span>
+                  <button onClick={() => toggleFav(r)} aria-label={t("fav.save")} aria-pressed={state.favorites.includes(r.id)}
+                    className={cx("rounded-full p-1.5 transition",
+                      state.favorites.includes(r.id) ? "text-gold-600" : "text-ink/25 hover:bg-gold-400/15 hover:text-gold-600")}>
+                    <Star size={16} fill={state.favorites.includes(r.id) ? "currentColor" : "none"} />
+                  </button>
                 </div>
               </div>
               <h3 className="mt-4 font-display text-lg leading-snug text-ink">{r.title}</h3>

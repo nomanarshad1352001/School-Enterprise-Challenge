@@ -8,6 +8,7 @@ import { useState } from "react";
 import { Award, ClipboardList, Coins, Copy, Lightbulb, ShieldCheck, Sprout, Trash2, Trophy, UserPlus } from "lucide-react";
 import { useApp } from "@/lib/store";
 import { Avatar, Button, Card, cx, Field, Input, Modal, SectionHead, Select, Switch } from "@/components/ui";
+import { CertificateModal } from "@/components/certificate";
 import { fmtNum, uid } from "@/lib/utils";
 
 const MEMBER_ROLES = ["Team Captain", "Finance Lead", "Marketing Lead", "Operations", "Production", "Sales"];
@@ -26,6 +27,7 @@ export default function TeamPage() {
   const [name, setName] = useState("");
   const [role, setRole] = useState(MEMBER_ROLES[0]);
   const [consent, setConsent] = useState(false);
+  const [cert, setCert] = useState<{ milestone: (typeof state.milestones)[number]; score: number } | null>(null);
 
   const inviteCode = activeTeam.name.slice(0, 3).toUpperCase() + "-" + (4820 + (activeTeam.hue % 90)) + "X";
 
@@ -132,6 +134,17 @@ export default function TeamPage() {
                 );
               })}
             </div>
+            {/* award certificate — unlocked by the best scored milestone */}
+            {(() => {
+              const bestIdx = [4, 3, 2, 1, 0].find((i) => activeTeam.progress[i]?.status === "reviewed");
+              const best = bestIdx !== undefined ? { m: state.milestones.find((mm) => mm.id === bestIdx)!, p: activeTeam.progress[bestIdx] } : null;
+              return (
+                <Button variant="gold" className="mt-4 w-full" disabled={!best || !best.p.score}
+                  onClick={() => best && setCert({ milestone: best.m, score: best.p.score ?? 0 })}>
+                  <Award size={15} /> {best ? t("cert.issue") : t("cert.unlock")}
+                </Button>
+              );
+            })()}
           </Card>
 
           {/* awards teaser */}
@@ -171,6 +184,11 @@ export default function TeamPage() {
           </div>
         </div>
       </Modal>
+
+      {/* award certificate */}
+      {cert && (
+        <CertificateModal open onClose={() => setCert(null)} team={activeTeam} milestone={cert.milestone} score={cert.score} />
+      )}
     </div>
   );
 }

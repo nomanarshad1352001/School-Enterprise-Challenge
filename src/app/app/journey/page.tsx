@@ -10,13 +10,14 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
-  AlertTriangle, CheckCircle2, ChevronRight, CirclePlay, Clock3, Coins, Download,
+  AlertTriangle, Award, CheckCircle2, ChevronRight, CirclePlay, Clock3, Coins, Download,
   FileImage, FileText, Lock, RotateCcw, Save, Send, UploadCloud, X,
 } from "lucide-react";
 import { useApp } from "@/lib/store";
 import type { MilestoneProgress, MilestoneStatus, SubFile } from "@/lib/types";
 import { Button, Card, cx, Modal, ScoreBars, StatusPill } from "@/components/ui";
 import { Donut } from "@/components/charts";
+import { CertificateModal } from "@/components/certificate";
 import { compressImage, downloadText, dummyDoc, fmtDate, fmtSize, kindOfFile, moderationHit, uid } from "@/lib/utils";
 
 const MAX_FILES = 6;
@@ -66,6 +67,7 @@ export default function JourneyPage() {
   const [busy, setBusy] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
   const [previewImg, setPreviewImg] = useState<string | null>(null);
+  const [cert, setCert] = useState<{ score: number } | null>(null);
 
   // swap in the stored draft when team / milestone / underlying data changes
   useEffect(() => {
@@ -441,9 +443,17 @@ export default function JourneyPage() {
                     </div>
                   );
                 })()}
-                <Button variant="outline" size="sm" className="mt-4" onClick={() => setSelIdx(Math.min(selIdx + 1, state.milestones.length - 1))}>
-                  {t("c.next")} {state.milestones[selIdx + 1]?.name[lang] ?? ""} <ChevronRight size={14} />
-                </Button>
+                <div className="mt-4 flex flex-wrap gap-2">
+                  <Button variant="outline" size="sm" onClick={() => setSelIdx(Math.min(selIdx + 1, state.milestones.length - 1))}>
+                    {t("c.next")} {state.milestones[selIdx + 1]?.name[lang] ?? ""} <ChevronRight size={14} />
+                  </Button>
+                  {activeTeam.progress[m.id]?.score !== undefined && (
+                    <Button variant="gold" size="sm"
+                      onClick={() => setCert({ score: activeTeam.progress[m.id].score! })}>
+                      <Award size={14} /> {t("cert.issue")}
+                    </Button>
+                  )}
+                </div>
               </div>
               {activeTeam.progress[m.id]?.feedback && (
                 <div className="rounded-xl border border-gold-500/30 bg-gold-400/10 p-4">
@@ -463,6 +473,11 @@ export default function JourneyPage() {
           <img src={previewImg} alt="" className="max-h-[70dvh] w-full rounded-xl object-contain" />
         )}
       </Modal>
+
+      {/* award certificate for this milestone */}
+      {cert && (
+        <CertificateModal open onClose={() => setCert(null)} team={activeTeam} milestone={m} score={cert.score} />
+      )}
     </div>
   );
 }

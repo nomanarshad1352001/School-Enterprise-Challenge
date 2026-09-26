@@ -10,12 +10,13 @@ import { usePathname, useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   Award, Bell, BookOpen, ClipboardCheck, Globe, Home, Landmark, LayoutDashboard,
-  LogOut, MessageSquare, RefreshCcw, Search, Settings, Sprout, Users, WifiOff,
+  LifeBuoy, LogOut, MessageSquare, RefreshCcw, Search, Settings, Sprout, Users, WifiOff,
 } from "lucide-react";
 import { useApp } from "@/lib/store";
 import type { Role } from "@/lib/types";
 import { LANGS } from "@/lib/i18n";
 import { Avatar, cx, EmptyState, Modal, RolePill, Sheet, ToastHost, useOnline } from "./ui";
+import { AskSec } from "./help";
 
 /* ---------- brand ---------- */
 
@@ -191,6 +192,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const [notifsOpen, setNotifsOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [helpOpen, setHelpOpen] = useState(false);
 
   const unread = state.notifications.filter((n) => !n.read).length;
   const navItems = useMemo(() => (user ? NAV.filter((n) => n.roles.includes(user.role)) : []), [user]);
@@ -267,6 +269,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <button onClick={() => setSearchOpen(true)} aria-label={t("c.search")}
               className="flex h-9 w-9 items-center justify-center rounded-full border border-hairline text-ink-2 transition hover:border-gold-500/60 hover:text-ink">
               <Search size={16} />
+            </button>
+            <button onClick={() => setHelpOpen(true)} aria-label={t("help.title")} title={t("help.title")}
+              className="flex h-9 w-9 items-center justify-center rounded-full border border-gold-500/50 bg-gold-400/10 text-gold-700 transition hover:bg-gold-400/20">
+              <LifeBuoy size={16} />
             </button>
             <button onClick={() => setNotifsOpen(true)} aria-label={t("c.notifications")}
               className="relative flex h-9 w-9 items-center justify-center rounded-full border border-hairline text-ink-2 transition hover:border-gold-500/60 hover:text-ink">
@@ -356,6 +362,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
       <NotificationsSheet open={notifsOpen} onClose={() => setNotifsOpen(false)} />
       <SearchModal open={searchOpen} onClose={() => setSearchOpen(false)} />
+      <AskSec open={helpOpen} onClose={() => setHelpOpen(false)} />
       <ToastHost />
     </div>
   );

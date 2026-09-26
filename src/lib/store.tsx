@@ -43,6 +43,8 @@ export interface AppState {
   templates: MessageTemplate[];
   /** full delivery history — every message ever sent */
   deliveries: Delivery[];
+  /** starred resource ids (the user's personal shelf) */
+  favorites: string[];
   prefs: Prefs;
   toasts: ToastMsg[];
 }
@@ -79,6 +81,9 @@ type Action =
   | { type: "MERGE_SCHOOLS"; name: string; country: string }
   | { type: "ASSIGN_SUBMISSION"; id: string; assignee: string }
   | { type: "ADD_STAFF"; staff: AdminUser }
+  | { type: "UPDATE_STAFF"; id: string; patch: Partial<AdminUser> }
+  | { type: "DELETE_STAFF"; id: string }
+  | { type: "TOGGLE_FAVORITE"; id: string }
   | { type: "UPDATE_TEMPLATE"; id: string; patch: Partial<MessageTemplate> }
   | { type: "SEND_MANUAL"; templateId: string; subject: string; body: string; channels: ("email" | "whatsapp")[]; country: string; inactiveOnly: boolean; at: string }
   | { type: "PUSH_TOAST"; toast: ToastMsg }
@@ -111,6 +116,7 @@ function freshState(): AppState {
     }],
     templates: structuredClone(MESSAGE_TEMPLATES),
     deliveries: seedDeliveries(),
+    favorites: ["rs-3", "rs-7"],
     prefs: { nEmail: true, nAnnounce: true, nFeedback: true },
     toasts: [],
   };
@@ -406,6 +412,17 @@ function reducer(state: AppState, action: Action): AppState {
 
     case "ADD_STAFF":
       return { ...state, adminUsers: [action.staff, ...state.adminUsers] };
+    case "UPDATE_STAFF":
+      return { ...state, adminUsers: state.adminUsers.map((u) => (u.id === action.id ? { ...u, ...action.patch } : u)) };
+    case "DELETE_STAFF":
+      return { ...state, adminUsers: state.adminUsers.filter((u) => u.id !== action.id) };
+    case "TOGGLE_FAVORITE":
+      return {
+        ...state,
+        favorites: state.favorites.includes(action.id)
+          ? state.favorites.filter((f) => f !== action.id)
+          : [...state.favorites, action.id],
+      };
 
     case "UPDATE_TEMPLATE":
       return { ...state, templates: state.templates.map((tp) => (tp.id === action.id ? { ...tp, ...action.patch } : tp)) };

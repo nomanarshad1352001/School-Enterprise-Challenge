@@ -5,6 +5,7 @@
    partner → organisation KPIs · admin → platform health */
 
 import Link from "next/link";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   ArrowRight, CircleCheck, ClipboardCheck, Download, Flag,
@@ -14,6 +15,7 @@ import { useApp } from "@/lib/store";
 import type { MilestoneCfg, SubmissionDraft, Team } from "@/lib/types";
 import { Avatar, Button, Card, cx, EmptyState, SectionHead, Stat } from "@/components/ui";
 import { Bars, Donut, Trend } from "@/components/charts";
+import { ProgrammeCalendar } from "@/components/calendar";
 import { REGION_STATS, TREND12 } from "@/lib/mock";
 import { fmtDate, fmtNum } from "@/lib/utils";
 
@@ -52,7 +54,12 @@ function TeacherHome() {
   const lastFeedback = Object.entries(activeTeam.progress)
     .reverse()
     .find(([, p]) => p.feedback)?.[1];
-  const board = [...state.teams].sort((a, b) => b.points - a.points).slice(0, 6);
+  const [band, setBand] = useState<"global" | "country">("global");
+  // fair comparison bands (Phase 2 preview): compare against your own country, not the whole world
+  const board = [...state.teams]
+    .sort((a, b) => b.points - a.points)
+    .filter((tm) => band === "global" || tm.country === activeTeam.country)
+    .slice(0, 6);
   const rank = [...state.teams].sort((a, b) => b.points - a.points).findIndex((tm) => tm.id === activeTeam.id) + 1;
 
   return (
@@ -164,7 +171,16 @@ function TeacherHome() {
 
         {/* leaderboard */}
         <Card className="p-5">
-          <SectionHead title={t("dash.leaderboard")} action={<Link href="/app/journey" className="text-xs font-bold text-pine-700 hover:underline">{t("c.viewAll")}</Link>} />
+          <SectionHead title={t("dash.leaderboard")} action={
+            <span className="flex gap-1 rounded-full bg-paper p-0.5">
+              {(["global", "country"] as const).map((b) => (
+                <button key={b} onClick={() => setBand(b)} aria-pressed={band === b}
+                  className={cx("rounded-full px-2.5 py-1 text-[10px] font-bold transition", band === b ? "bg-ink text-cream" : "text-ink-2")}>
+                  {b === "global" ? t("lb.global") : t("lb.country")}
+                </button>
+              ))}
+            </span>
+          } />
           <div className="space-y-1">
             {board.map((tm, i) => (
               <div key={tm.id} className={cx(
@@ -184,8 +200,9 @@ function TeacherHome() {
         </Card>
       </div>
 
-      {/* quick actions + announcements */}
-      <div className="grid gap-5 lg:grid-cols-2">
+      {/* quick actions + announcements + programme calendar */}
+      <div className="grid gap-5 lg:grid-cols-2 xl:grid-cols-3">
+        <ProgrammeCalendar />
         <Card className="p-5">
           <SectionHead title={t("dash.quickActions")} />
           <div className="grid grid-cols-2 gap-2.5">
@@ -252,6 +269,26 @@ function ReviewerHome() {
         <Stat label={t("dash.revPending")} value={String(pending.length)} accent />
         <Stat label={t("dash.revDone")} value={String(reviewed)} />
       </div>
+
+      {/* the judge's own craft stats — derived from the append-only history */}
+      {(() => {
+        const mine = state.submissions.flatMap((s) => (s.history ?? []).filter((ev) => ev.by === state.user?.name));
+        const scored = mine.filter((ev) => ev.decision === "approved");
+        const avg = scored.length ? Math.round(scored.reduce((a, ev) => a + ev.total, 0) / scored.length) : 0;
+        const subs = state.submissions.filter((s) => s.assignee === state.user?.name && s.reviewedAt);
+        const speed = subs.length ? Math.round(subs.reduce((a, s) => a + Math.max(0, (new Date(s.reviewedAt!).getTime() - new Date(s.submittedAt).getTime()) / 86400000), 0) / subs.length) : 0;
+        return (
+          <Card className="p-5">
+            <SectionHead kicker={t("role.reviewer")} title={t("judge.craft")} />
+            <div className="grid grid-cols-3 gap-3 text-center">
+              <div className="rounded-2xl bg-paper p-4"><div className="font-display text-3xl text-ink">{mine.length}</div><div className="mt-1 text-[10px] font-bold uppercase tracking-widest text-ink-2/60">{t("judge.scored")}</div></div>
+              <div className="rounded-2xl bg-paper p-4"><div className="font-display text-3xl gold-text">{avg}</div><div className="mt-1 text-[10px] font-bold uppercase tracking-widest text-ink-2/60">{t("judge.avg")}</div></div>
+              <div className="rounded-2xl bg-paper p-4"><div className="font-display text-3xl text-pine-700">{speed}{t("a.daysShort")}</div><div className="mt-1 text-[10px] font-bold uppercase tracking-widest text-ink-2/60">{t("judge.speed")}</div></div>
+            </div>
+          </Card>
+        );
+      })()}
+      <ProgrammeCalendar />
       <Card className="p-5">
         <SectionHead title={t("rv.title")} action={<Button variant="outline" size="sm" onClick={() => router.push("/app/review")}>{t("c.viewAll")}</Button>} />
         <div className="divide-y divide-hairline/60">
@@ -303,7 +340,7 @@ function PartnerHome() {
         <Stat label={t("dash.pkStudents")} value={fmtNum(students)} />
         <Stat label={t("dash.pkCountries")} value="1" />
       </div>
-      <div className="grid gap-5 lg:grid-cols-2">
+      <div className="grid gap-5 lg:grid-cols-3">
         <Card className="p-5">
           <SectionHead title={t("dash.byRegion")} />
           <Bars data={REGION_STATS.map((r) => ({ label: r.region, value: r.teams }))} formatValue={(v) => `${fmtNum(v)} ${t("c.teams")}`} />
@@ -312,6 +349,7 @@ function PartnerHome() {
           <SectionHead title={t("dash.trend")} />
           <Trend points={TREND12} />
         </Card>
+        <ProgrammeCalendar />
       </div>
 
       {/* at-risk teams: silent for 4+ weeks before milestone 2 */}
@@ -388,6 +426,7 @@ function AdminHome() {
           </div>
         </Card>
       </div>
+      <ProgrammeCalendar />
     </div>
   );
 }
